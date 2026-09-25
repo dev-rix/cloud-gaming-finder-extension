@@ -11,7 +11,7 @@ Initial Chromium MV3 MVP for showing positive cloud-gaming availability on produ
 
 ## Architecture
 
-- `src/background.js` owns catalog retrieval and 24-hour local caching; it includes entries marked `AVAILABLE` and keeps using the last successful local copy if a refresh fails.
+- `src/background.js` owns published catalog retrieval and 24-hour local caching; it includes entries marked `available` and keeps using the last successful local copy if a refresh fails.
 - `src/content.js` contains store adapters, product-page/platform checks, and positive-only rendering logic.
 - Adding a store means registering a hostname matcher, title selectors, and a title extractor in `STORE_ADAPTERS`.
 - The current first pass covers product pages on Steam, Loaded, GOG, and Humble Bundle. Store adapters identify the product and title; provider catalogs decide whether to show service badges. DLC/expansion-style products are ignored.
@@ -20,6 +20,6 @@ Initial Chromium MV3 MVP for showing positive cloud-gaming availability on produ
 
 The companion `cloud-gaming-finder-catalog` repository is organized around provider-neutral catalog files. `src/catalog-config.js` points to its raw `catalog/manifest.json`; the extension then loads the provider files listed by the manifest. The extension caches the last successful catalog locally.
 
-The GeForce NOW provider is refreshed by a Playwright job that reads NVIDIA's live games page. The source is not an official API contract, so the updater validates the result size and required current titles before publishing.
+The GeForce NOW provider is refreshed by a Playwright job that reads NVIDIA's live games page. The extension does not contact NVIDIA directly; it only consumes the published GitHub catalog.
 
 The first matcher is intentionally conservative: normalized title matching with platform/launcher and common edition cleanup. A production release should add stronger store IDs, regional availability, confidence scoring, and tests before expanding to search pages. NVIDIA's older locale catalog may not include every newly released game; use the options page refresh when testing.

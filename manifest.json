@@ -1,15 +1,11 @@
 {
   "manifest_version": 3,
   "name": "Cloud Gaming Finder",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "description": "Finds cloud gaming availability on supported game stores.",
-  "permissions": ["storage", "scripting", "tabs"],
+  "permissions": ["storage"],
   "host_permissions": [
-    "https://raw.githubusercontent.com/*",
-    "https://static.nvidiagrid.net/supported-public-game-list/*",
-    "https://prod.cloudmatchbeta.nvidiagrid.net/v2/serverinfo",
-    "https://api-prod.nvidia.com/services/gfngames/*",
-    "https://www.nvidia.com/*"
+    "https://raw.githubusercontent.com/*"
   ],
   "action": {
     "default_title": "Cloud Gaming Finder"
