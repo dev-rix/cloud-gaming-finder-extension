@@ -41,9 +41,10 @@ const STORE_ADAPTERS = [
     selectors: ["h1", "[data-testid='product-title']", "[class*='product-title']", "[class*='ProductTitle']", "main h1", "meta[property='og:title']"],
     isProductPage: () => /\/(store|games|software)\//i.test(location.pathname),
     getProductId: () => location.pathname,
-    // Humble Store product pages are PC products by default. Reject only
-    // pages explicitly advertising a console version.
-    isPcProduct: () => !/\b(playstation|xbox|nintendo|switch|ps4|ps5|series x|series s)\b/i.test(productText()),
+    // Humble Store product pages are PC products by default. Page-wide text
+    // is not a safe console check because navigation and recommendations may
+    // mention other platforms.
+    isPcProduct: () => true,
     title: () => document.querySelector("h1")?.textContent || document.querySelector("[data-testid='product-title']")?.textContent || document.querySelector("[class*='product-title']")?.textContent || document.querySelector("[class*='ProductTitle']")?.textContent || document.querySelector("meta[property='og:title']")?.content || document.title
   }
 ];
