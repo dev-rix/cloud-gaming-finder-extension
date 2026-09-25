@@ -1,6 +1,6 @@
 # Cloud Gaming Finder
 
-Initial Chromium MV3 MVP for showing positive cloud-gaming availability on product pages at Steam, Loaded, GOG, and Humble Bundle.
+Initial Chromium MV3 MVP for showing positive cloud-gaming availability on product pages at Steam, Loaded, GOG, Humble Bundle, and Epic Games Store.
 
 ## Load locally
 
@@ -13,8 +13,8 @@ Initial Chromium MV3 MVP for showing positive cloud-gaming availability on produ
 
 - `src/background.js` owns published catalog retrieval and 24-hour local caching; it includes entries marked `available` and keeps using the last successful local copy if a refresh fails.
 - `src/content.js` contains store adapters, product-page/platform checks, and positive-only rendering logic.
-- Adding a store means registering a hostname matcher, title selectors, and a title extractor in `STORE_ADAPTERS`.
-- The current first pass covers product pages on Steam, Loaded, GOG, and Humble Bundle. Store adapters identify the product and title; provider catalogs decide whether to show service badges. DLC/expansion-style products are ignored.
+- Adding a store means registering a hostname matcher, product-page detector, title selectors, and a title extractor in `STORE_ADAPTERS`.
+- Store adapters identify the product and title; provider catalogs decide whether to show service badges. Matching prefers provider/store IDs when available, then canonical titles and aliases. DLC/expansion-style products are ignored.
 
 ## Catalog integration
 

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Cloud Gaming Finder",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Finds cloud gaming availability on supported game stores.",
   "permissions": ["storage"],
   "host_permissions": [
@@ -20,7 +20,8 @@
         "https://store.steampowered.com/*",
         "https://*.loaded.com/*",
         "https://*.gog.com/*",
-        "https://*.humblebundle.com/*"
+        "https://*.humblebundle.com/*",
+        "https://store.epicgames.com/*"
       ],
       "js": ["src/content.js"],
       "css": ["src/badges.css"],

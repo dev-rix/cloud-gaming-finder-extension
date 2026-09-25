@@ -33,6 +33,14 @@ const STORE_ADAPTERS = [
     title: () => document.querySelector("h1")?.textContent || document.querySelector(".productcard-basics__title")?.textContent || document.querySelector("meta[property='og:title']")?.content
   },
   {
+    id: "epic",
+    matches: /(^|\.)store\.epicgames\.com$/,
+    selectors: ["h1", "[data-testid*='title']", "meta[property='og:title']"],
+    isProductPage: () => /\/p\//i.test(location.pathname),
+    getProductId: () => location.pathname,
+    title: () => document.querySelector("h1")?.textContent || document.querySelector("[data-testid*='title']")?.textContent || document.querySelector("meta[property='og:title']")?.content || document.title
+  },
+  {
     id: "humble",
     matches: /(^|\.)humblebundle\.com$/,
     selectors: ["h1", "[data-testid='product-title']", "[class*='product-title']", "[class*='ProductTitle']", "main h1", "meta[property='og:title']"],
@@ -44,10 +52,6 @@ const STORE_ADAPTERS = [
 
 function normalize(value) {
   return String(value || "").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " ");
-}
-
-function productText() {
-  return document.body?.innerText?.slice(0, 16000) || "";
 }
 
 function hasUnsupportedProductType(title) {
@@ -87,35 +91,44 @@ function titleFor(adapter) {
     .replace(/\s*[|–—-]\s*Humble\s+Store\s*$/i, "")
     .replace(/\s+Humble\s+Store\s*$/i, "")
     .replace(/\s+\d+%\s+off\b.*$/i, "")
-    .replace(/\s*[|–—-]\s*(Steam|GOG|Humble Bundle|Loaded).*$/i, "")
+    .replace(/\s*[|–—-]\s*(Steam|GOG|Epic Games Store|Humble Bundle|Loaded).*$/i, "")
     .replace(/\s*\((Standard|Base|PC) Edition\)$/i, "")
     .trim();
 }
+
+const VISIBLE_PROVIDER_IDS = new Set(["geforce-now"]);
+const PROVIDER_LABELS = {
+  "geforce-now": "GeForce NOW"
+};
 
 function removeExisting() {
   document.querySelectorAll("[data-cloudready-badge]").forEach((node) => node.remove());
 }
 
-function addBadge(adapter, title, available) {
-  if (!available) return;
+function addBadges(adapter, title, providerIds) {
+  if (!providerIds.length) return;
   removeExisting();
-  const badge = document.createElement("span");
-  badge.dataset.cloudreadyBadge = "true";
-  badge.className = "cloudready-badge is-available";
-  badge.textContent = "GeForce NOW";
-  badge.title = `${title} is listed in the cached GeForce NOW catalog`;
   const target = adapter.selectors
     .map((selector) => document.querySelector(selector))
     .find((element) => element && element.tagName !== "META" && element.getClientRects().length);
-  if (target?.parentElement) {
-    target.parentElement.appendChild(badge);
-  } else {
-    badge.classList.add("fallback-placement");
-    document.body?.appendChild(badge);
+  for (const providerId of providerIds) {
+    const badge = document.createElement("span");
+    badge.dataset.cloudreadyBadge = "true";
+    badge.dataset.provider = providerId;
+    badge.className = "cloudready-badge is-available";
+    badge.textContent = PROVIDER_LABELS[providerId] || providerId;
+    badge.title = `${title} is listed in the ${badge.textContent} catalog`;
+    if (target?.parentElement) {
+      target.parentElement.appendChild(badge);
+    } else {
+      badge.classList.add("fallback-placement");
+      document.body?.appendChild(badge);
+    }
   }
 }
 
-function gameMatches(game, candidates) {
+function gameMatches(game, candidates, adapter, productId) {
+  if (productId && game.storeIds?.[adapter.id] === productId) return true;
   const names = [game.normalizedTitle, ...(Array.isArray(game.aliases) ? game.aliases : [])].filter(Boolean);
   return names.some((name) => candidates.has(name));
 }
@@ -148,11 +161,12 @@ async function render() {
   if (location.href !== renderUrl) return;
   const candidates = new Set(titleCandidates(title));
   const productId = adapter.getProductId?.();
-  let available = response.games.some((game) =>
-    (productId && game.steamAppId === productId) || gameMatches(game, candidates)
-  );
+  const providerIds = [...new Set(response.games
+    .filter((game) => gameMatches(game, candidates, adapter, productId))
+    .map((game) => game.provider || "geforce-now")
+    .filter((providerId) => VISIBLE_PROVIDER_IDS.has(providerId)))];
   removeExisting();
-  addBadge(adapter, title, available);
+  addBadges(adapter, title, providerIds);
 }
 
 let lastUrl = location.href;

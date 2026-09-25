@@ -24,6 +24,7 @@ function publishedGames(value, providerId) {
       aliases: Array.isArray(game.aliases) ? game.aliases.map(normalize).filter(Boolean) : [],
       provider: providerId,
       store: Array.isArray(game.stores) ? game.stores.join(", ") : "",
+      storeIds: game.storeIds || {},
       status: "AVAILABLE",
       metadata: game.metadata || {}
     }));
