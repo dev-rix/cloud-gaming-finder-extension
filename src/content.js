@@ -139,7 +139,7 @@ async function render() {
   } catch (error) {
     if (/Extension context invalidated/i.test(String(error?.message || error))) {
       extensionInvalidated = true;
-      console.debug("CloudReady Store Badges: reload this page after reloading the extension.");
+      console.debug("Cloud Gaming Finder: reload this page after reloading the extension.");
       return;
     }
     throw error;
@@ -151,22 +151,6 @@ async function render() {
   let available = response.games.some((game) =>
     (productId && game.steamAppId === productId) || gameMatches(game, candidates)
   );
-  if (!available) {
-    try {
-      const liveResponse = await chrome.runtime.sendMessage({
-        type: "lookupLive",
-        titles: [...candidates]
-      });
-      if (location.href !== renderUrl) return;
-      available = Boolean(liveResponse?.ok && liveResponse.games.some((game) => gameMatches(game, candidates)));
-    } catch (error) {
-      if (/Extension context invalidated/i.test(String(error?.message || error))) {
-        extensionInvalidated = true;
-        console.debug("CloudReady Store Badges: reload this page after reloading the extension.");
-        return;
-      }
-    }
-  }
   removeExisting();
   addBadge(adapter, title, available);
 }
