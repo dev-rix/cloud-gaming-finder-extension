@@ -3,7 +3,7 @@ import { CATALOG_MANIFEST_URL } from "./catalog-config.js";
 const CATALOG_URL = "https://static.nvidiagrid.net/supported-public-game-list/locales/gfnpc-en-US.json";
 const LIVE_SERVERINFO_URL = "https://prod.cloudmatchbeta.nvidiagrid.net/v2/serverinfo";
 const LIVE_CATALOG_URL = "https://api-prod.nvidia.com/services/gfngames/v1/gameList";
-const CACHE_KEY = "gfnCatalogV2";
+const CACHE_KEY = "gfnCatalogV3";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function normalize(value) {
