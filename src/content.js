@@ -5,7 +5,6 @@ const STORE_ADAPTERS = [
     selectors: [".apphub_AppName", "#appHubAppName"],
     isProductPage: () => /^\/app\/\d+/.test(location.pathname),
     getProductId: () => location.pathname.match(/^\/app\/(\d+)/)?.[1] || null,
-    isPcProduct: () => true,
     title: () => document.querySelector(".apphub_AppName")?.textContent || document.querySelector("#appHubAppName")?.textContent
   },
   {
@@ -23,7 +22,6 @@ const STORE_ADAPTERS = [
         !/^(explore|payday|search|cart|account|login|register|gift-ideas|about|help|blog)$/i.test(segments[0]);
     },
     getProductId: () => location.pathname,
-    isPcProduct: () => /\b(pc|windows)\b/i.test(productText()),
     title: () => document.querySelector("h1")?.textContent || document.querySelector("[data-testid*='title']")?.textContent || document.querySelector("meta[property='og:title']")?.content
   },
   {
@@ -32,7 +30,6 @@ const STORE_ADAPTERS = [
     selectors: ["h1", ".productcard-basics__title", "meta[property='og:title']"],
     isProductPage: () => /\/game\//i.test(location.pathname),
     getProductId: () => location.pathname,
-    isPcProduct: () => /\b(pc|windows|steam|gog)\b/i.test(productText()),
     title: () => document.querySelector("h1")?.textContent || document.querySelector(".productcard-basics__title")?.textContent || document.querySelector("meta[property='og:title']")?.content
   },
   {
@@ -41,10 +38,6 @@ const STORE_ADAPTERS = [
     selectors: ["h1", "[data-testid='product-title']", "[class*='product-title']", "[class*='ProductTitle']", "main h1", "meta[property='og:title']"],
     isProductPage: () => /\/(store|games|software)\//i.test(location.pathname),
     getProductId: () => location.pathname,
-    // Humble Store product pages are PC products by default. Page-wide text
-    // is not a safe console check because navigation and recommendations may
-    // mention other platforms.
-    isPcProduct: () => true,
     title: () => document.querySelector("h1")?.textContent || document.querySelector("[data-testid='product-title']")?.textContent || document.querySelector("[class*='product-title']")?.textContent || document.querySelector("[class*='ProductTitle']")?.textContent || document.querySelector("meta[property='og:title']")?.content || document.title
   }
 ];
@@ -131,7 +124,7 @@ async function render() {
   if (extensionInvalidated) return;
   const renderUrl = location.href;
   const adapter = currentAdapter();
-  if (!adapter || !adapter.isProductPage?.() || !adapter.isPcProduct?.()) {
+  if (!adapter || !adapter.isProductPage?.()) {
     removeExisting();
     return;
   }
