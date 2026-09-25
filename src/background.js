@@ -1,5 +1,8 @@
 import { CATALOG_MANIFEST_URL } from "./catalog-config.js";
 
+// The service worker is deliberately catalog-only. It never contacts a game
+// provider directly and never opens helper tabs; the catalog repository owns
+// provider discovery and publishing.
 const CACHE_KEY = "publishedCatalogV1";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -31,6 +34,8 @@ function publishedGames(value, providerId) {
 }
 
 async function loadPublishedCatalog() {
+  // The manifest is the extension's provider registry. Each provider can be
+  // updated independently while keeping the extension's data contract stable.
   const manifestResponse = await fetch(CATALOG_MANIFEST_URL, { cache: "no-store" });
   if (!manifestResponse.ok) throw new Error(`Published catalog manifest failed: ${manifestResponse.status}`);
   const manifest = await manifestResponse.json();
@@ -66,6 +71,8 @@ async function loadCatalog(force = false) {
     });
     return games;
   } catch (error) {
+    // A temporary GitHub/provider outage should not remove already-known
+    // positive badges. A first install still fails cleanly with ok: false.
     if (cachedEntry && Array.isArray(cachedEntry.games) && cachedEntry.games.length) {
       return cachedEntry.games;
     }

@@ -1,3 +1,5 @@
+// Store adapters only identify product pages and extract titles/IDs. They do
+// not know which cloud services exist; provider catalogs make that decision.
 const STORE_ADAPTERS = [
   {
     id: "steam",
@@ -96,6 +98,9 @@ function titleFor(adapter) {
     .trim();
 }
 
+// Keep the catalog/provider model extensible while exposing only the MVP
+// provider in the UI. Enabling another provider later is intentionally a
+// small configuration change rather than a rewrite of matching/rendering.
 const VISIBLE_PROVIDER_IDS = new Set(["geforce-now"]);
 const PROVIDER_LABELS = {
   "geforce-now": "GeForce NOW"
@@ -128,6 +133,8 @@ function addBadges(adapter, title, providerIds) {
 }
 
 function gameMatches(game, candidates, adapter, productId) {
+  // IDs are preferred because titles can be shared by editions or remakes.
+  // Normalized titles and aliases remain the provider-neutral fallback.
   if (productId && game.storeIds?.[adapter.id] === productId) return true;
   const names = [game.normalizedTitle, ...(Array.isArray(game.aliases) ? game.aliases : [])].filter(Boolean);
   return names.some((name) => candidates.has(name));
