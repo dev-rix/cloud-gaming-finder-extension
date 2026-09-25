@@ -23,10 +23,13 @@
         "https://*.humblebundle.com/*",
         "https://store.epicgames.com/*"
       ],
-      "js": ["src/content.js"],
+      "js": ["src/normalize.js", "src/content.js"],
       "css": ["src/badges.css"],
       "run_at": "document_idle"
     }
   ],
-  "options_page": "src/options.html"
+  "options_ui": {
+    "page": "src/options.html",
+    "open_in_tab": true
+  }
 }
