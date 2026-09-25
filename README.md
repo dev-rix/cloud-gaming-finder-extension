@@ -18,8 +18,8 @@ Initial Chromium MV3 MVP for showing positive cloud-gaming availability on PC pr
 
 ## Catalog integration
 
-The companion `cloud-gaming-finder-catalog` repository is organized around provider-neutral catalog files. Set `CATALOG_MANIFEST_URL` in `src/catalog-config.js` to that repository's raw `catalog/manifest.json`; the extension then loads the provider files listed by the manifest. Until that URL is configured, it falls back to NVIDIA's original public catalog endpoint.
+The companion `cloud-gaming-finder-catalog` repository is organized around provider-neutral catalog files. `src/catalog-config.js` points to its raw `catalog/manifest.json`; the extension then loads the provider files listed by the manifest. The extension caches the last successful catalog locally.
 
-The initial GeForce NOW source is NVIDIA's public supported-game catalog endpoint. The source is not an official API contract and may omit newer games; catalog updates therefore validate the result size before publishing.
+The GeForce NOW provider is refreshed by a Playwright job that reads NVIDIA's live games page. The source is not an official API contract, so the updater validates the result size and required current titles before publishing.
 
 The first matcher is intentionally conservative: normalized title matching with platform/launcher and common edition cleanup. A production release should add stronger store IDs, regional availability, confidence scoring, and tests before expanding to search pages. NVIDIA's older locale catalog may not include every newly released game; use the options page refresh when testing.
