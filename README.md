@@ -12,8 +12,9 @@ Chromium MV3 extension that shows positive cloud-gaming availability on product 
 ## Architecture
 
 - `src/background.js` owns published catalog retrieval and 24-hour local caching; it includes entries marked `available` and keeps using the last successful local copy if a refresh fails.
-- `src/catalog-config.js` contains the single published catalog manifest URL.
-- `src/content.js` contains store adapters, title normalization, provider matching, and positive-only rendering logic.
+- `src/catalog-config.js` contains the single published catalog manifest URL. Provider files listed in the manifest must resolve inside the same catalog directory, and oversized catalogs are rejected.
+- `src/normalize.js` is the one title normalizer, shared by the service worker and the content script.
+- `src/content.js` contains store adapters, title candidates, provider matching, and positive-only rendering logic.
 - Adding a store means registering a hostname matcher, product-page detector, title selectors, and a title extractor in `STORE_ADAPTERS`.
 - Store adapters identify the product and title; provider catalogs decide whether to show service badges. Matching prefers provider/store IDs when available, then canonical titles and aliases. DLC/expansion-style products are ignored.
 

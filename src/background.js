@@ -1,4 +1,5 @@
 import { CATALOG_MANIFEST_URL } from "./catalog-config.js";
+import "./normalize.js";
 
 // The service worker is deliberately catalog-only. It never contacts a game
 // provider directly and never opens helper tabs; the catalog repository owns
@@ -6,25 +7,34 @@ import { CATALOG_MANIFEST_URL } from "./catalog-config.js";
 const CACHE_KEY = "publishedCatalogV1";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
-function normalize(value) {
-  return String(value || "")
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/&/g, " and ")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim()
-    .replace(/\s+/g, " ");
+// Sanity bounds on published data. The real catalog is far below these; they
+// only stop a broken or tampered catalog from filling local storage.
+const MAX_GAMES_PER_PROVIDER = 50000;
+const MAX_TITLE_LENGTH = 300;
+
+// Provider files must live next to the manifest in the catalog repository.
+const CATALOG_BASE_URL = new URL("./", CATALOG_MANIFEST_URL).href;
+
+function providerFileUrl(provider) {
+  const url = new URL(provider.file, CATALOG_MANIFEST_URL);
+  if (typeof provider.file !== "string" || !url.href.startsWith(CATALOG_BASE_URL)) {
+    throw new Error(`Published ${provider.id} catalog path is outside the catalog: ${provider.file}`);
+  }
+  return url;
 }
 
 function publishedGames(value, providerId) {
   if (!value || value.provider !== providerId || !Array.isArray(value.games)) return [];
+  if (value.games.length > MAX_GAMES_PER_PROVIDER) {
+    throw new Error(`Published ${providerId} catalog is too large: ${value.games.length} games`);
+  }
   return value.games
-    .filter((game) => game.status === "available" && game.title)
+    .filter((game) => game.status === "available" && typeof game.title === "string" &&
+      game.title && game.title.length <= MAX_TITLE_LENGTH)
     .map((game) => ({
       title: game.title,
-      normalizedTitle: normalize(game.title),
-      aliases: Array.isArray(game.aliases) ? game.aliases.map(normalize).filter(Boolean) : [],
+      normalizedTitle: normalizeTitle(game.title),
+      aliases: Array.isArray(game.aliases) ? game.aliases.map(normalizeTitle).filter(Boolean) : [],
       provider: providerId,
       store: Array.isArray(game.stores) ? game.stores.join(", ") : "",
       storeIds: game.storeIds || {},
@@ -46,7 +56,7 @@ async function loadPublishedCatalog() {
   const catalogs = await Promise.all(manifest.providers
     .filter((provider) => provider.status === "available" && provider.file)
     .map(async (provider) => {
-      const url = new URL(provider.file, CATALOG_MANIFEST_URL);
+      const url = providerFileUrl(provider);
       const response = await fetch(url, { cache: "no-store" });
       if (!response.ok) throw new Error(`Published ${provider.id} catalog failed: ${response.status}`);
       return publishedGames(await response.json(), provider.id);

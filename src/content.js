@@ -52,16 +52,12 @@ const STORE_ADAPTERS = [
   }
 ];
 
-function normalize(value) {
-  return String(value || "").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " ");
-}
-
 function hasUnsupportedProductType(title) {
   return /\b(dl[cs]|expansion|soundtrack|season pass|currency|points|upgrade bundle|add[- ]?on)\b/i.test(title);
 }
 
 function titleCandidates(title) {
-  const normalized = normalize(title);
+  const normalized = normalizeTitle(title);
   const candidates = new Set([normalized]);
   const platformTitle = normalized
     .replace(/\b(pc|windows|mac|linux|steam|gog|epic|ea app|ubisoft connect|xbox|playstation)\b/g, " ")
